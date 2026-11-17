@@ -1,0 +1,1 @@
+<?php require 'db.php'; if(!isset($_SESSION['user_id'])){header('Location:index.php');exit;} include 'layout_v4.html'; ?>

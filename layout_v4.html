@@ -1,0 +1,231 @@
+<!-- APP WRAPPER -->
+<link rel="stylesheet" href="./assets/styles.css">
+<script src="./assets/script.js" defer></script>
+
+<main class="app-shell">
+
+    <!-- HEADER -->
+    <header class="app-header">
+      <div class="title-block">
+        <h1>lo-fi // typing.it</h1>
+        <p class="subtitle">clone casalingo 10fastfingers (v4, versione con DB)</p>
+      </div>
+    
+      <div class="controls">
+    
+        <div class="control-group">
+          <label class="control">
+            durata
+            <select id="duration">
+              <option value="30">30s</option>
+              <option value="60" selected>60s</option>
+              <option value="120">120s</option>
+            </select>
+          </label>
+    
+          <label class="control">
+            modalità
+            <select id="mode">
+              <option value="easy" selected>facile</option>
+              <option value="standard">standard (mix)</option>
+              <option value="medium">medio</option>
+              <option value="hard">difficile</option>
+              <option value="ringPinky">anulari &amp; mignoli</option>
+            </select>
+            
+          </label>
+        </div>
+    
+        <div class="control-group right">
+          <div class="personal-best">
+            <span class="pb-label">record</span>
+            <span id="pbValue" class="pb-value">–</span>
+          </div>
+    
+          <!-- MINI PROFILO -->
+          <a href="profile.php" class="profile-mini">
+            <?php
+            // recupera info utente per avatar mini
+            if (isset($_SESSION["user_id"])) {
+              $uid = (int)$_SESSION["user_id"];
+              $stmt = $conn->prepare("SELECT username, avatar FROM users WHERE id = ?");
+              $stmt->bind_param("i", $uid);
+              $stmt->execute();
+              $stmt->bind_result($uName, $uAvatar);
+              $stmt->fetch();
+              $stmt->close();
+            }
+            ?>
+            <div class="profile-mini-avatar">
+              <?php if (!empty($uAvatar)): ?>
+                <img src="<?= htmlspecialchars($uAvatar) ?>" alt="avatar mini">
+              <?php else: ?>
+                <span><?= isset($uName) ? strtoupper(substr($uName,0,1)) : "U" ?></span>
+              <?php endif; ?>
+            </div>
+          </a>
+    
+          <a href="logout.php" class="btn-ghost">logout</a>
+        </div>
+    
+      </div>
+    </header>
+    
+    <!-- END HEADER -->
+  
+    <!-- WORDS AREA -->
+    <section class="words-container">
+      <div id="wordsHistory" class="words-history"></div>
+      <div id="wordsCurrent" class="words-current"></div>
+    </section>
+  
+    <!-- INPUT AREA -->
+<section class="input-row">
+  <div class="input-main">
+    <span class="prompt">&gt;</span>
+    <input
+      id="typingInput"
+      type="text"
+      autocomplete="off"
+      spellcheck="false"
+      autocapitalize="off"
+      autofocus
+      placeholder="digita qui e premi spazio per confermare la parola"
+    >
+  </div>
+
+  <div class="input-metrics">
+    <div class="metric-small">
+      <span class="label">tempo</span>
+      <span id="liveTime" class="value">--:--</span>
+    </div>
+    <div class="metric-small">
+      <span class="label">wpm</span>
+      <span id="liveWpm" class="value">0</span>
+    </div>
+  </div>
+</section>
+
+  
+    <!-- PANELS SOTTO (KEYBOARD + TIPS) -->
+    <section class="lower-panels">
+  
+      <!-- KEYBOARD PANEL -->
+      <div class="panel keyboard-panel">
+        <h2>mappa dita</h2>
+        <p class="hint">i tasti colorati sono assegnati ad anulari & mignoli</p>
+  
+        <div class="keyboard">
+  
+          <div class="row">
+            <span data-key="q" class="key key-l-pinky">Q</span>
+            <span data-key="w" class="key key-l-ring">W</span>
+            <span data-key="e" class="key">E</span>
+            <span data-key="r" class="key">R</span>
+            <span data-key="t" class="key">T</span>
+            <span data-key="y" class="key">Y</span>
+            <span data-key="u" class="key">U</span>
+            <span data-key="i" class="key">I</span>
+            <span data-key="o" class="key key-r-ring">O</span>
+            <span data-key="p" class="key key-r-pinky">P</span>
+          </div>
+  
+          <div class="row">
+            <span data-key="a" class="key key-l-pinky">A</span>
+            <span data-key="s" class="key key-l-ring">S</span>
+            <span data-key="d" class="key">D</span>
+            <span data-key="f" class="key">F</span>
+            <span data-key="g" class="key">G</span>
+            <span data-key="h" class="key">H</span>
+            <span data-key="j" class="key">J</span>
+            <span data-key="k" class="key">K</span>
+            <span data-key="l" class="key key-r-ring">L</span>
+            <span data-key="ò" class="key key-r-pinky">Ò</span>
+          </div>
+  
+          <div class="row">
+            <span data-key="z" class="key key-l-pinky">Z</span>
+            <span data-key="x" class="key key-l-ring">X</span>
+            <span data-key="c" class="key">C</span>
+            <span data-key="v" class="key">V</span>
+            <span data-key="b" class="key">B</span>
+            <span data-key="n" class="key">N</span>
+            <span data-key="m" class="key key-r-ring">M</span>
+            <span data-key="ù" class="key key-r-pinky">Ù</span>
+          </div>
+  
+        </div>
+      </div>
+  
+      <!-- TIPS PANEL -->
+      <div class="panel tips-panel">
+        <h2>tips in tempo reale</h2>
+        <ul id="tipsList" class="tips-list">
+          <li>rilassa spalle e polsi</li>
+          <li>guarda lo schermo, non la tastiera</li>
+          <li>prima la precisione, poi la velocità</li>
+        </ul>
+      </div>
+  
+    </section>
+  
+    <!-- SPIEGAZIONI -->
+    <section class="bottom-panel">
+      <details>
+        <summary>spiegone veloce su anulari & mignoli</summary>
+        <div class="explanation">
+          <p>in modalità <strong>anulari & mignoli</strong> vengono privilegiate parole contenenti lettere più difficili:</p>
+          <ul>
+            <li><strong>sinistra:</strong> q / a / z → mignolo</li>
+            <li>w / s / x → anulare</li>
+            <li><strong>destra:</strong> p / ò / ù → mignolo</li>
+            <li>o / l / m → anulare</li>
+          </ul>
+        </div>
+      </details>
+    </section>
+  
+    <!-- OVERLAY RISULTATI -->
+    <div id="resultsOverlay" class="overlay hidden">
+      <div class="overlay-content">
+  
+        <h2>sessione finita</h2>
+  
+        <div class="metrics-grid">
+          <div class="metric">
+            <span class="label">WPM</span>
+            <span id="wpmFinal" class="value-big">0</span>
+          </div>
+  
+          <div class="metric">
+            <span class="label">CPM</span>
+            <span id="cpmFinal" class="value-big">0</span>
+          </div>
+  
+          <div class="metric">
+            <span class="label">precisione</span>
+            <span id="accuracyFinal" class="value-big">0%</span>
+          </div>
+        </div>
+  
+        <div class="metric metric-inline">
+          <span class="label">record personale</span>
+          <span id="pbFinal" class="value-big small">–</span>
+        </div>
+  
+        <div class="problem-keys">
+          <h3>tasti problematici</h3>
+          <p id="problemKeys">–</p>
+        </div>
+  
+        <div class="finger-feedback">
+          <h3>feedback anulari & mignoli</h3>
+          <p id="fingerTips">–</p>
+        </div>
+  
+        <button id="btnCloseOverlay" class="btn-ghost">nuovo round</button>
+      </div>
+    </div>
+  
+  </main>
+  
